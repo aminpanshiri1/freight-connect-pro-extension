@@ -1,0 +1,64 @@
+{
+  "manifest_version": 3,
+  "name": "Freight Connect Pro",
+  "version": "1.0.0",
+  "description": "One-click email tool for Truckstop and DAT load boards with route mapping and rate filters",
+  "permissions": [
+    "identity",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://www.truckstop.com/*",
+    "https://truckstop.com/*",
+    "https://one.dat.com/*",
+    "https://*.dat.com/*",
+    "https://www.googleapis.com/*",
+    "https://maps.googleapis.com/*"
+  ],
+  "oauth2": {
+    "client_id": "664028684698-84fh76j3nprond26ofk2tmmrncgcsc1t.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/gmail.send",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.truckstop.com/*",
+        "https://truckstop.com/*",
+        "https://one.dat.com/*",
+        "https://*.dat.com/*"
+      ],
+      "js": ["content/content-script.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

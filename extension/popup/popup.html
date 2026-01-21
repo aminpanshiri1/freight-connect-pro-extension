@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Freight Connect Pro</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚚 Freight Connect Pro</h1>
+      <p class="subtitle">One-Click Email for Load Boards</p>
+    </div>
+
+    <!-- Status Display -->
+    <div id="status" class="status hidden">
+      <div class="status-content">
+        <span id="statusIcon"></span>
+        <span id="statusText"></span>
+      </div>
+    </div>
+
+    <!-- Load Info Display -->
+    <div id="loadInfo" class="load-info hidden">
+      <h3>📦 Current Load</h3>
+      <div class="info-row">
+        <span class="label">Origin:</span>
+        <span id="origin" class="value">-</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Destination:</span>
+        <span id="destination" class="value">-</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Distance:</span>
+        <span id="distance" class="value">-</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Rate:</span>
+        <span id="rate" class="value">-</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Rate/Mile:</span>
+        <span id="ratePerMile" class="value">-</span>
+      </div>
+    </div>
+
+    <!-- Email Buttons -->
+    <div class="email-section">
+      <h3>📧 Send Quick Email</h3>
+      <button id="emailBtn1" class="email-btn primary" data-email="aminpanshiri1@gmail.com">
+        <span class="btn-icon">✉️</span>
+        <div class="btn-content">
+          <div class="btn-title">Main Account</div>
+          <div class="btn-email">aminpanshiri1@gmail.com</div>
+        </div>
+      </button>
+      
+      <button id="emailBtn2" class="email-btn" data-email="info@freightwiz.us">
+        <span class="btn-icon">✉️</span>
+        <div class="btn-content">
+          <div class="btn-title">FreightWiz</div>
+          <div class="btn-email">info@freightwiz.us</div>
+        </div>
+      </button>
+      
+      <button id="emailBtn3" class="email-btn" data-email="info@generalfreightinc.com">
+        <span class="btn-icon">✉️</span>
+        <div class="btn-content">
+          <div class="btn-title">General Freight</div>
+          <div class="btn-email">info@generalfreightinc.com</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-section">
+      <button id="showMapBtn" class="action-btn">
+        <span>🗺️</span> Show Route
+      </button>
+      <button id="refreshBtn" class="action-btn secondary">
+        <span>🔄</span> Refresh Data
+      </button>
+    </div>
+
+    <!-- Settings Section -->
+    <div class="settings-section">
+      <h3>⚙️ Settings</h3>
+      <div class="setting-row">
+        <label for="colorFilter">Color Filter:</label>
+        <input type="checkbox" id="colorFilter" checked>
+      </div>
+      <div class="setting-row">
+        <label>Auth Status:</label>
+        <button id="authBtn" class="auth-btn">Sign in with Gmail</button>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <small>v1.0.0 | Works with Truckstop & DAT</small>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
