@@ -1,0 +1,7 @@
+/* Content Script Styles */
+
+/* Minimal styles to avoid conflicts */
+.lc-highlight {
+  outline: 2px solid #667eea !important;
+  outline-offset: 2px;
+}
