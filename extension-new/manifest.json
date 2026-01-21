@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "LoadConnect Pro",
+  "version": "2.0.0",
+  "description": "Simple one-click email tool for Truckstop and DAT load boards",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "clipboardWrite"
+  ],
+  "host_permissions": [
+    "https://www.truckstop.com/*",
+    "https://truckstop.com/*",
+    "https://one.dat.com/*",
+    "https://*.dat.com/*"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.truckstop.com/*",
+        "https://truckstop.com/*",
+        "https://one.dat.com/*",
+        "https://*.dat.com/*"
+      ],
+      "js": ["content/content.js"],
+      "css": ["content/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

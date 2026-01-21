@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>LoadConnect Pro</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>🚛 LoadConnect Pro</h1>
+      <p class="subtitle">One-Click Email for Load Boards</p>
+    </div>
+
+    <!-- Status Messages -->
+    <div id="statusMsg" class="status-msg hidden"></div>
+
+    <!-- Load Information -->
+    <div id="loadInfo" class="load-info hidden">
+      <div class="info-header">
+        <h3>📦 Load Details</h3>
+        <button id="copyBtn" class="copy-btn" title="Copy Load Info">📋 Copy</button>
+      </div>
+      
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="label">Origin:</span>
+          <span id="origin" class="value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Destination:</span>
+          <span id="destination" class="value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Distance:</span>
+          <span id="distance" class="value">-</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Rate:</span>
+          <span id="rate" class="value">-</span>
+        </div>
+        <div class="info-item rpm-highlight">
+          <span class="label">Rate/Mile:</span>
+          <span id="rpm" class="value">-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="actions">
+      <button id="mapBtn" class="action-btn map-btn">
+        <span>🗺️</span>
+        <span>View Route</span>
+      </button>
+      <button id="refreshBtn" class="action-btn refresh-btn">
+        <span>🔄</span>
+        <span>Refresh</span>
+      </button>
+    </div>
+
+    <!-- Email Buttons -->
+    <div class="email-section">
+      <h3>📧 Send Quick Email</h3>
+      
+      <button class="email-btn primary" data-email="aminpanshiri1@gmail.com">
+        <div class="email-icon">✉️</div>
+        <div class="email-info">
+          <div class="email-title">Main Account</div>
+          <div class="email-addr">aminpanshiri1@gmail.com</div>
+        </div>
+      </button>
+
+      <button class="email-btn" data-email="info@freightwiz.us">
+        <div class="email-icon">✉️</div>
+        <div class="email-info">
+          <div class="email-title">FreightWiz</div>
+          <div class="email-addr">info@freightwiz.us</div>
+        </div>
+      </button>
+
+      <button class="email-btn" data-email="info@generalfreightinc.com">
+        <div class="email-icon">✉️</div>
+        <div class="email-info">
+          <div class="email-title">General Freight</div>
+          <div class="email-addr">info@generalfreightinc.com</div>
+        </div>
+      </button>
+    </div>
+
+    <!-- Settings -->
+    <div class="settings">
+      <label class="toggle-label">
+        <input type="checkbox" id="colorToggle" checked>
+        <span>Enable Rate Color Filter</span>
+      </label>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <small>v2.0 | Truckstop & DAT</small>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
