@@ -1,31 +1,31 @@
-// Freight Connect Pro - Truckstop.com Content Script v2.1
-// Fixed for AG Grid structure
+// Freight Connect Pro - Truckstop.com Content Script v2.2
+// Fixed for AG Grid with visited-row class
 
 (function() {
   'use strict';
 
-  console.log('[FCP] Content script starting...');
+  console.log('[FCP] Content script v2.2 starting...');
 
   const FCP_INJECTED_ATTR = 'data-fcp-injected';
-  let injectionAttempts = 0;
-  let lastRowCount = 0;
   
   // CSS Styles
   const styles = `
     .fcp-btn-container {
       display: inline-flex !important;
-      gap: 6px !important;
+      gap: 4px !important;
       align-items: center !important;
-      margin-left: 8px !important;
+      margin-left: 6px !important;
       flex-shrink: 0 !important;
       vertical-align: middle !important;
+      position: relative !important;
+      z-index: 9999 !important;
     }
     
     .fcp-btn {
-      width: 28px !important;
-      height: 28px !important;
-      min-width: 28px !important;
-      border-radius: 5px !important;
+      width: 26px !important;
+      height: 26px !important;
+      min-width: 26px !important;
+      border-radius: 4px !important;
       border: none !important;
       cursor: pointer !important;
       display: inline-flex !important;
@@ -34,12 +34,12 @@
       transition: all 0.15s ease !important;
       position: relative !important;
       padding: 0 !important;
-      z-index: 9999 !important;
       vertical-align: middle !important;
     }
     
     .fcp-btn:hover {
       transform: scale(1.1) !important;
+      z-index: 10000 !important;
     }
     
     .fcp-btn-send {
@@ -64,6 +64,7 @@
       stroke: white !important;
       fill: none !important;
       stroke-width: 2.5 !important;
+      pointer-events: none !important;
     }
     
     .fcp-tooltip {
@@ -99,6 +100,7 @@
     styleEl.id = 'fcp-styles';
     styleEl.textContent = styles;
     document.head.appendChild(styleEl);
+    console.log('[FCP] Styles injected');
   }
 
   const ICONS = {
@@ -107,10 +109,10 @@
     check: `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`
   };
 
-  // Get load data from row
+  // Extract load data from row
   function extractLoadData(row) {
     const rowId = row.getAttribute('row-id') || row.getAttribute('row-index') || 
-                  row.getAttribute('comp-id') || `fcp_${Date.now()}`;
+                  row.getAttribute('comp-id') || `fcp_${Date.now()}_${Math.random().toString(36).substr(2,6)}`;
     
     let loadData = {
       load_id: rowId,
@@ -121,33 +123,83 @@
       equipment_type: ''
     };
 
+    // Get all cells
+    const cells = row.querySelectorAll('[role="gridcell"], .ag-cell');
+    
+    cells.forEach(cell => {
+      const colId = cell.getAttribute('col-id') || '';
+      const text = (cell.textContent || '').trim();
+      
+      // Origin
+      if (colId.includes('origin') || colId.includes('Origin') || colId.includes('pickup') || colId.includes('Pickup')) {
+        const match = text.match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
+        if (match) {
+          loadData.origin_city = match[1].trim();
+          loadData.origin_state = match[2];
+        } else if (text.length === 2 && /^[A-Z]{2}$/.test(text)) {
+          loadData.origin_state = text;
+        } else if (text.length > 2) {
+          loadData.origin_city = text;
+        }
+      }
+      
+      // Destination
+      if (colId.includes('dest') || colId.includes('Dest') || colId.includes('delivery') || colId.includes('Delivery')) {
+        const match = text.match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
+        if (match) {
+          loadData.destination_city = match[1].trim();
+          loadData.destination_state = match[2];
+        } else if (text.length === 2 && /^[A-Z]{2}$/.test(text)) {
+          loadData.destination_state = text;
+        } else if (text.length > 2) {
+          loadData.destination_city = text;
+        }
+      }
+      
+      // Rate
+      if (colId.includes('rate') || colId.includes('Rate') || colId.includes('price') || colId.includes('Price')) {
+        const rateMatch = text.replace(/,/g, '').match(/\$?\s*(\d+)/);
+        if (rateMatch) loadData.rate = parseInt(rateMatch[1]);
+      }
+      
+      // Miles
+      if (colId.includes('mile') || colId.includes('Mile') || colId.includes('distance') || colId.includes('Distance')) {
+        const milesMatch = text.replace(/,/g, '').match(/(\d+)/);
+        if (milesMatch) loadData.miles = parseInt(milesMatch[1]);
+      }
+      
+      // Equipment
+      if (colId.includes('equip') || colId.includes('Equip') || colId.includes('type') || colId.includes('Type')) {
+        if (/van/i.test(text)) loadData.equipment_type = 'Van';
+        else if (/reefer/i.test(text)) loadData.equipment_type = 'Reefer';
+        else if (/flat/i.test(text)) loadData.equipment_type = 'Flatbed';
+      }
+      
+      // Company
+      if (colId.includes('company') || colId.includes('Company') || colId.includes('broker') || colId.includes('Broker') || colId.includes('poster') || colId.includes('Poster')) {
+        loadData.broker_name = text;
+        const mcMatch = text.match(/MC[#:\s-]*(\d+)/i);
+        if (mcMatch) loadData.broker_mc = `MC${mcMatch[1]}`;
+      }
+    });
+
+    // Fallback: parse entire row text
     const rowText = row.textContent || '';
     
-    // Find city, STATE patterns
-    const locations = rowText.match(/([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),?\s*([A-Z]{2})\b/g) || [];
-    if (locations.length >= 1) {
-      const m1 = locations[0].match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
-      if (m1) { loadData.origin_city = m1[1].trim(); loadData.origin_state = m1[2]; }
+    if (!loadData.origin_state) {
+      const locations = rowText.match(/\b([A-Z]{2})\b/g);
+      if (locations && locations.length >= 2) {
+        loadData.origin_state = locations[0];
+        loadData.destination_state = locations[1];
+      }
     }
-    if (locations.length >= 2) {
-      const m2 = locations[1].match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
-      if (m2) { loadData.destination_city = m2[1].trim(); loadData.destination_state = m2[2]; }
+    
+    if (!loadData.rate) {
+      const rateMatch = rowText.match(/\$\s*([\d,]+)/);
+      if (rateMatch) loadData.rate = parseInt(rateMatch[1].replace(/,/g, ''));
     }
 
-    // Find rate ($X,XXX)
-    const rateMatch = rowText.match(/\$[\s]*([\d,]+)/);
-    if (rateMatch) loadData.rate = parseInt(rateMatch[1].replace(/,/g, ''));
-
-    // Find miles
-    const milesMatch = rowText.match(/(\d{2,4})\s*(?:mi|miles?)/i);
-    if (milesMatch) loadData.miles = parseInt(milesMatch[1]);
-
-    // Equipment
-    if (/\bvan\b/i.test(rowText)) loadData.equipment_type = 'Van';
-    if (/\breefer\b/i.test(rowText)) loadData.equipment_type = 'Reefer';
-    if (/\bflatbed\b/i.test(rowText)) loadData.equipment_type = 'Flatbed';
-
-    // Email
+    // Email link
     const emailLink = row.querySelector('a[href^="mailto:"]');
     if (emailLink) loadData.broker_email = emailLink.href.replace('mailto:', '').split('?')[0];
 
@@ -163,13 +215,13 @@
     sendBtn.className = 'fcp-btn fcp-btn-send';
     sendBtn.type = 'button';
     sendBtn.innerHTML = ICONS.send + '<span class="fcp-tooltip">Quick Send</span>';
-    sendBtn.onclick = (e) => { e.stopPropagation(); sendEmail(loadData, sendBtn); };
+    sendBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); sendEmail(loadData, sendBtn); };
 
     const composeBtn = document.createElement('button');
     composeBtn.className = 'fcp-btn fcp-btn-compose';
     composeBtn.type = 'button';
     composeBtn.innerHTML = ICONS.envelope + '<span class="fcp-tooltip">Compose</span>';
-    composeBtn.onclick = (e) => { e.stopPropagation(); composeEmail(loadData); };
+    composeBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); composeEmail(loadData); };
 
     container.appendChild(sendBtn);
     container.appendChild(composeBtn);
@@ -183,10 +235,9 @@
       if (!email) return;
     }
 
-    const origin = loadData.origin_city ? `${loadData.origin_city}, ${loadData.origin_state}` : 'Origin';
-    const dest = loadData.destination_city ? `${loadData.destination_city}, ${loadData.destination_state}` : 'Destination';
+    const origin = loadData.origin_city ? `${loadData.origin_city}, ${loadData.origin_state}` : loadData.origin_state || 'Origin';
+    const dest = loadData.destination_city ? `${loadData.destination_city}, ${loadData.destination_state}` : loadData.destination_state || 'Destination';
     
-    // Get template from storage
     const data = await getStorage(['templates', 'emailAccounts', 'activeAccountId']);
     const template = (data.templates || []).find(t => t.is_default) || data.templates?.[0];
     const account = (data.emailAccounts || []).find(a => a.id === data.activeAccountId) || data.emailAccounts?.[0];
@@ -212,7 +263,7 @@
     
     btn.classList.add('fcp-sent');
     btn.innerHTML = ICONS.check + '<span class="fcp-tooltip">Sent!</span>';
-    showNotification('Email opened!', 'success');
+    showNotification('Email opened!');
   }
 
   function composeEmail(loadData) {
@@ -221,15 +272,19 @@
       email = prompt('Enter broker email:');
       if (!email) return;
     }
-    const origin = loadData.origin_city ? `${loadData.origin_city}, ${loadData.origin_state}` : 'Origin';
-    const dest = loadData.destination_city ? `${loadData.destination_city}, ${loadData.destination_state}` : 'Destination';
+    const origin = loadData.origin_city ? `${loadData.origin_city}, ${loadData.origin_state}` : loadData.origin_state || 'Origin';
+    const dest = loadData.destination_city ? `${loadData.destination_city}, ${loadData.destination_state}` : loadData.destination_state || 'Destination';
     window.open(`mailto:${email}?subject=${encodeURIComponent(`Load Inquiry: ${origin} to ${dest}`)}`);
-    showNotification('Compose opened!', 'success');
+    showNotification('Compose opened!');
   }
 
-  function showNotification(msg, type) {
+  function showNotification(msg) {
+    const existing = document.querySelector('.fcp-notification');
+    if (existing) existing.remove();
+    
     const n = document.createElement('div');
-    n.style.cssText = `position:fixed;top:20px;right:20px;padding:12px 20px;background:${type==='success'?'#22c55e':'#ef4444'};color:white;border-radius:8px;font-family:system-ui;font-size:14px;z-index:2147483647;box-shadow:0 4px 12px rgba(0,0,0,0.3);`;
+    n.className = 'fcp-notification';
+    n.style.cssText = `position:fixed;top:20px;right:20px;padding:12px 20px;background:#22c55e;color:white;border-radius:8px;font-family:system-ui;font-size:14px;z-index:2147483647;box-shadow:0 4px 12px rgba(0,0,0,0.3);`;
     n.textContent = msg;
     document.body.appendChild(n);
     setTimeout(() => n.remove(), 3000);
@@ -242,121 +297,151 @@
     });
   }
 
-  // MAIN INJECTION FUNCTION
+  // MAIN INJECTION - Try multiple row selectors
   function injectButtons() {
-    // Find ALL AG Grid rows
-    const rows = document.querySelectorAll('.ag-row:not(.ag-row-group):not([data-fcp-injected])');
+    // Multiple selectors for finding rows
+    const rowSelectors = [
+      '.ag-center-cols-container [role="row"]',
+      '.ag-center-cols-viewport [role="row"]',
+      '.ag-body-viewport [role="row"]',
+      '[role="row"].ag-row',
+      '.ag-row:not(.ag-row-group)',
+      '[class*="visited-row"]',
+      '.ag-row-even',
+      '.ag-row-odd',
+      '[row-index]'
+    ];
     
-    console.log(`[FCP] Found ${rows.length} unprocessed AG Grid rows`);
-
+    let allRows = new Set();
+    
+    rowSelectors.forEach(selector => {
+      try {
+        document.querySelectorAll(selector).forEach(row => allRows.add(row));
+      } catch (e) {}
+    });
+    
+    console.log(`[FCP] Found ${allRows.size} potential rows`);
+    
     let injected = 0;
-    rows.forEach(row => {
+    
+    allRows.forEach(row => {
+      // Skip if already processed
+      if (row.hasAttribute(FCP_INJECTED_ATTR)) return;
+      
       // Skip header rows
       if (row.classList.contains('ag-header-row')) return;
+      if (row.querySelector('.ag-header-cell')) return;
+      if (row.getAttribute('role') === 'columnheader') return;
       
-      // Skip empty rows
+      // Must have cells
+      const cells = row.querySelectorAll('[role="gridcell"], .ag-cell');
+      if (cells.length < 3) return;
+      
+      // Skip if text too short (probably not a data row)
       const text = row.textContent?.trim();
-      if (!text || text.length < 20) return;
-
-      // Find the LAST cell (actions column)
-      const cells = row.querySelectorAll('.ag-cell');
-      if (cells.length === 0) return;
-
-      const lastCell = cells[cells.length - 1];
+      if (!text || text.length < 10) return;
       
-      // Skip if already has FCP buttons
-      if (lastCell.querySelector('.fcp-btn-container')) return;
-
+      // Find the last cell or action cell to inject into
+      let targetCell = null;
+      
+      // Look for action column
+      for (let i = cells.length - 1; i >= 0; i--) {
+        const cell = cells[i];
+        const colId = (cell.getAttribute('col-id') || '').toLowerCase();
+        if (colId.includes('action') || colId.includes('button') || colId.includes('menu')) {
+          targetCell = cell;
+          break;
+        }
+      }
+      
+      // Fallback to last cell
+      if (!targetCell) {
+        targetCell = cells[cells.length - 1];
+      }
+      
+      // Skip if already has our buttons
+      if (targetCell.querySelector('.fcp-btn-container')) return;
+      
       const loadData = extractLoadData(row);
       const buttons = createButtons(loadData);
-
-      // Find existing content in cell
-      const cellValue = lastCell.querySelector('.ag-cell-value') || lastCell;
       
-      // Append our buttons
-      cellValue.appendChild(buttons);
+      // Find inner container or use cell directly
+      const inner = targetCell.querySelector('.ag-cell-value') || targetCell;
+      inner.appendChild(buttons);
       
-      row.setAttribute('data-fcp-injected', 'true');
+      row.setAttribute(FCP_INJECTED_ATTR, 'true');
       injected++;
     });
 
     if (injected > 0) {
       console.log(`[FCP] ✅ Injected into ${injected} rows!`);
+      showNotification(`FCP: Added to ${injected} loads`);
     }
 
     return injected;
   }
 
-  // AGGRESSIVE POLLING
-  function startPolling() {
-    setInterval(() => {
-      const currentRows = document.querySelectorAll('.ag-row').length;
-      
-      // Always try to inject
-      const injected = injectButtons();
-      
-      if (currentRows !== lastRowCount) {
-        console.log(`[FCP] Row count changed: ${lastRowCount} -> ${currentRows}`);
-        lastRowCount = currentRows;
-      }
-    }, 1000);
-  }
-
-  // MUTATION OBSERVER
-  function setupObserver() {
-    const observer = new MutationObserver((mutations) => {
-      let shouldInject = false;
-      for (const m of mutations) {
-        if (m.addedNodes.length) {
-          for (const node of m.addedNodes) {
-            if (node.nodeType === 1) {
-              if (node.classList?.contains('ag-row') || node.querySelector?.('.ag-row')) {
-                shouldInject = true;
-                break;
-              }
-            }
-          }
-        }
-        if (shouldInject) break;
-      }
-      if (shouldInject) {
-        setTimeout(injectButtons, 100);
-      }
+  // Polling and observer
+  function startMonitoring() {
+    // Initial injection with delay
+    setTimeout(injectButtons, 2000);
+    setTimeout(injectButtons, 4000);
+    setTimeout(injectButtons, 6000);
+    
+    // Continuous polling
+    setInterval(injectButtons, 3000);
+    
+    // Mutation observer
+    const observer = new MutationObserver(() => {
+      setTimeout(injectButtons, 500);
     });
-
+    
     observer.observe(document.body, { childList: true, subtree: true });
   }
 
-  // DEBUG FUNCTION - call from console: window.fcpDebug()
+  // Debug function
   window.fcpDebug = function() {
-    console.log('=== FCP DEBUG ===');
-    console.log('AG Rows:', document.querySelectorAll('.ag-row').length);
-    console.log('AG Cells:', document.querySelectorAll('.ag-cell').length);
-    console.log('AG Body:', document.querySelectorAll('.ag-body-viewport').length);
-    console.log('Injected:', document.querySelectorAll('[data-fcp-injected]').length);
-    console.log('FCP Buttons:', document.querySelectorAll('.fcp-btn-container').length);
+    console.log('=== FCP DEBUG v2.2 ===');
+    console.log('URL:', location.href);
     
-    const firstRow = document.querySelector('.ag-row:not(.ag-row-group)');
+    const selectors = {
+      '.ag-row': document.querySelectorAll('.ag-row').length,
+      '[role="row"]': document.querySelectorAll('[role="row"]').length,
+      '.ag-center-cols-container': document.querySelectorAll('.ag-center-cols-container').length,
+      '[row-index]': document.querySelectorAll('[row-index]').length,
+      '.ag-cell': document.querySelectorAll('.ag-cell').length,
+      '[data-fcp-injected]': document.querySelectorAll('[data-fcp-injected]').length,
+      '.fcp-btn-container': document.querySelectorAll('.fcp-btn-container').length,
+    };
+    
+    console.table(selectors);
+    
+    // Try to find and show first data row
+    const firstRow = document.querySelector('.ag-center-cols-container [role="row"], .ag-row:not(.ag-header-row)');
     if (firstRow) {
       console.log('First row classes:', firstRow.className);
-      console.log('First row cells:', firstRow.querySelectorAll('.ag-cell').length);
-      console.log('First row text (100 chars):', firstRow.textContent?.substring(0, 100));
+      console.log('First row cells:', firstRow.querySelectorAll('.ag-cell, [role="gridcell"]').length);
     }
-    console.log('=================');
+    
+    // Manual injection attempt
+    console.log('Attempting manual injection...');
+    injectButtons();
   };
 
-  // INIT
+  // Force inject function
+  window.fcpInject = function() {
+    console.log('[FCP] Force injecting...');
+    document.querySelectorAll('[data-fcp-injected]').forEach(el => el.removeAttribute(FCP_INJECTED_ATTR));
+    document.querySelectorAll('.fcp-btn-container').forEach(el => el.remove());
+    injectButtons();
+  };
+
+  // Init
   function init() {
-    console.log('[FCP] Initializing...');
+    console.log('[FCP] Initializing v2.2...');
     injectStyles();
-    
-    // Initial injection after delay
-    setTimeout(() => {
-      injectButtons();
-      setupObserver();
-      startPolling();
-      console.log('[FCP] Ready! Type fcpDebug() in console for diagnostics.');
-    }, 2000);
+    startMonitoring();
+    console.log('[FCP] Ready! Use fcpDebug() or fcpInject() in console.');
   }
 
   if (document.readyState === 'loading') {
