@@ -41,7 +41,10 @@
     {
       "matches": [
         "https://*.truckstop.com/*",
-        "https://truckstop.com/*"
+        "https://truckstop.com/*",
+        "https://*.truckstoploadboard.com/*",
+        "https://truckstoploadboard.com/*",
+        "https://main.truckstop.com/*"
       ],
       "js": ["js/content-truckstop.js"],
       "run_at": "document_idle",
