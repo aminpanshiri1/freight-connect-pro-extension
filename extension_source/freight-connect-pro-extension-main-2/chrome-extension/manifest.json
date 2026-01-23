@@ -1,17 +1,24 @@
 {
   "manifest_version": 3,
   "name": "Freight Connect Pro",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Your tactical load hunting companion - Find loads, calculate RPM, check brokers, and email with one click",
   "permissions": [
     "storage",
     "identity",
     "tabs",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "host_permissions": [
     "https://auth.emergentagent.com/*",
-    "https://demobackend.emergentagent.com/*"
+    "https://demobackend.emergentagent.com/*",
+    "https://*.truckstop.com/*",
+    "https://truckstop.com/*",
+    "https://*.dat.com/*",
+    "https://dat.com/*",
+    "https://power.dat.com/*",
+    "https://one.dat.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -30,6 +37,28 @@
   "background": {
     "service_worker": "js/background.js"
   },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.truckstop.com/*",
+        "https://truckstop.com/*"
+      ],
+      "js": ["js/content-truckstop.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "https://*.dat.com/*",
+        "https://dat.com/*",
+        "https://power.dat.com/*",
+        "https://one.dat.com/*"
+      ],
+      "js": ["js/content-dat.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
   "oauth2": {
     "client_id": "emergent-freight-connect",
     "scopes": ["email", "profile"]
