@@ -1,95 +1,114 @@
 // Freight Connect Pro - DAT.com Content Script
-// Injects FCP buttons (green arrow + orange envelope) into load rows
+// Handles load board on DAT Power, DAT One
 
 (function() {
   'use strict';
 
+  console.log('[FCP] Freight Connect Pro loaded on DAT');
+
   const FCP_INJECTED_ATTR = 'data-fcp-injected';
-  const INJECTION_INTERVAL = 2000;
+  let injectionAttempts = 0;
+  const MAX_ATTEMPTS = 60;
   
   // CSS Styles
   const styles = `
     .fcp-btn-container {
-      display: inline-flex;
-      gap: 4px;
-      margin-left: 8px;
-      align-items: center;
+      display: inline-flex !important;
+      gap: 6px !important;
+      align-items: center !important;
+      margin-left: 8px !important;
+      flex-shrink: 0 !important;
     }
     
     .fcp-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-      position: relative;
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      border-radius: 6px !important;
+      border: none !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: all 0.2s ease !important;
+      position: relative !important;
+      padding: 0 !important;
+      z-index: 100 !important;
     }
     
     .fcp-btn:hover {
-      transform: scale(1.1);
+      transform: scale(1.15) !important;
+      z-index: 101 !important;
     }
     
     .fcp-btn-send {
-      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-      box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+      box-shadow: 0 2px 6px rgba(34, 197, 94, 0.4) !important;
     }
     
     .fcp-btn-send:hover {
-      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-      box-shadow: 0 4px 8px rgba(34, 197, 94, 0.4);
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.5) !important;
     }
     
     .fcp-btn-compose {
-      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-      box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+      box-shadow: 0 2px 6px rgba(249, 115, 22, 0.4) !important;
     }
     
     .fcp-btn-compose:hover {
-      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
-      box-shadow: 0 4px 8px rgba(249, 115, 22, 0.4);
+      background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%) !important;
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.5) !important;
     }
     
     .fcp-btn svg {
-      width: 14px;
-      height: 14px;
-      stroke: white;
-      fill: none;
-      stroke-width: 2;
+      width: 16px !important;
+      height: 16px !important;
+      stroke: white !important;
+      fill: none !important;
+      stroke-width: 2 !important;
     }
     
     .fcp-tooltip {
-      position: absolute;
-      bottom: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1a1a2e;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      white-space: nowrap;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-      margin-bottom: 4px;
-      z-index: 10000;
+      position: absolute !important;
+      bottom: calc(100% + 8px) !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      background: #1e293b !important;
+      color: white !important;
+      padding: 6px 10px !important;
+      border-radius: 6px !important;
+      font-size: 12px !important;
+      font-weight: 500 !important;
+      white-space: nowrap !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.2s !important;
+      z-index: 10000 !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+    
+    .fcp-tooltip::after {
+      content: '' !important;
+      position: absolute !important;
+      top: 100% !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      border: 6px solid transparent !important;
+      border-top-color: #1e293b !important;
     }
     
     .fcp-btn:hover .fcp-tooltip {
-      opacity: 1;
+      opacity: 1 !important;
     }
     
     .fcp-btn.fcp-sent {
-      background: #6b7280 !important;
-      cursor: default;
+      background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%) !important;
+      cursor: default !important;
     }
     
     .fcp-btn.fcp-sent:hover {
-      transform: none;
+      transform: none !important;
     }
   `;
 
@@ -98,7 +117,8 @@
     const styleEl = document.createElement('style');
     styleEl.id = 'fcp-styles';
     styleEl.textContent = styles;
-    document.head.appendChild(styleEl);
+    (document.head || document.documentElement).appendChild(styleEl);
+    console.log('[FCP] Styles injected');
   }
 
   const ICONS = {
@@ -109,10 +129,13 @@
 
   function extractLoadData(row) {
     try {
-      const cells = row.querySelectorAll('td');
+      const rowId = row.getAttribute('data-row-id') || 
+                    row.getAttribute('row-id') || 
+                    row.getAttribute('data-id') || 
+                    `dat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
       let loadData = {
-        load_id: row.getAttribute('data-load-id') || row.getAttribute('data-id') || `dat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        load_id: rowId,
         origin_city: '',
         origin_state: '',
         destination_city: '',
@@ -127,38 +150,53 @@
         pickup_date: ''
       };
 
-      // DAT specific selectors
+      const cells = row.querySelectorAll('.ag-cell, [role="gridcell"], td, [class*="cell"], [class*="Cell"]');
+      const rowText = row.textContent || '';
+
       cells.forEach((cell, index) => {
-        const text = cell.textContent.trim();
-        const cellClass = cell.className.toLowerCase();
+        const text = (cell.textContent || '').trim();
+        const className = (cell.className || '').toLowerCase();
+        const colId = cell.getAttribute('col-id') || '';
         
-        // Origin/Destination columns
-        if (cellClass.includes('origin') || cellClass.includes('pickup') || index === 0) {
+        // Origin
+        if (className.includes('origin') || 
+            className.includes('pickup') ||
+            colId.toLowerCase().includes('origin') ||
+            colId.toLowerCase().includes('pickup')) {
           const match = text.match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
-          if (match && !loadData.origin_city) {
+          if (match) {
             loadData.origin_city = match[1].trim();
             loadData.origin_state = match[2];
           }
         }
         
-        if (cellClass.includes('dest') || cellClass.includes('delivery') || index === 1) {
+        // Destination
+        if (className.includes('dest') || 
+            className.includes('delivery') ||
+            colId.toLowerCase().includes('dest') ||
+            colId.toLowerCase().includes('delivery')) {
           const match = text.match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
-          if (match && !loadData.destination_city) {
+          if (match) {
             loadData.destination_city = match[1].trim();
             loadData.destination_state = match[2];
           }
         }
         
         // Miles
-        if (cellClass.includes('mile') || cellClass.includes('distance')) {
-          const milesMatch = text.match(/[\d,]+/);
-          if (milesMatch) loadData.miles = parseInt(milesMatch[0].replace(',', ''));
+        if (className.includes('mile') || 
+            className.includes('distance') ||
+            colId.toLowerCase().includes('mile')) {
+          const milesMatch = text.replace(/,/g, '').match(/(\d+)/);
+          if (milesMatch) loadData.miles = parseInt(milesMatch[1]);
         }
         
         // Rate
-        if (cellClass.includes('rate') || cellClass.includes('price') || text.includes('$')) {
-          const rateMatch = text.match(/\$?([\d,]+)/);
-          if (rateMatch && !loadData.rate) loadData.rate = parseInt(rateMatch[1].replace(',', ''));
+        if (className.includes('rate') || 
+            className.includes('price') ||
+            colId.toLowerCase().includes('rate') ||
+            text.includes('$')) {
+          const rateMatch = text.replace(/,/g, '').match(/\$?\s*(\d+(?:\.\d{2})?)/);
+          if (rateMatch && !loadData.rate) loadData.rate = parseFloat(rateMatch[1]);
         }
         
         // Equipment
@@ -166,48 +204,54 @@
         if (text.toLowerCase().includes('reefer')) loadData.equipment_type = 'Reefer';
         if (text.toLowerCase().includes('flatbed')) loadData.equipment_type = 'Flatbed';
         
-        // Broker info
-        if (cellClass.includes('company') || cellClass.includes('broker') || cellClass.includes('contact')) {
-          if (!loadData.broker_name) loadData.broker_name = text.split('\n')[0].trim();
+        // Company/Broker
+        if (className.includes('company') || 
+            className.includes('broker') ||
+            className.includes('poster') ||
+            colId.toLowerCase().includes('company')) {
+          if (!loadData.broker_name && text.length > 2) {
+            loadData.broker_name = text.split('\n')[0].trim();
+          }
           
-          const mcMatch = text.match(/MC[#\s-]*(\d+)/i);
+          const mcMatch = text.match(/MC[#:\s-]*(\d+)/i);
           if (mcMatch) loadData.broker_mc = `MC${mcMatch[1]}`;
-          
-          const emailEl = cell.querySelector('a[href^="mailto:"]');
-          if (emailEl) loadData.broker_email = emailEl.getAttribute('href').replace('mailto:', '');
-          
-          const phoneMatch = text.match(/[\d()-]{10,}/);
-          if (phoneMatch) loadData.broker_phone = phoneMatch[0];
         }
       });
 
-      // Fallback parsing from row content
-      const rowText = row.textContent;
-      
+      // Fallback location parsing
       if (!loadData.origin_city || !loadData.destination_city) {
         const locationMatches = rowText.match(/([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),?\s*([A-Z]{2})/g);
         if (locationMatches && locationMatches.length >= 2) {
-          const origin = locationMatches[0].match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
-          const dest = locationMatches[1].match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
-          if (origin && !loadData.origin_city) {
-            loadData.origin_city = origin[1].trim();
-            loadData.origin_state = origin[2];
+          if (!loadData.origin_city) {
+            const origin = locationMatches[0].match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
+            if (origin) {
+              loadData.origin_city = origin[1].trim();
+              loadData.origin_state = origin[2];
+            }
           }
-          if (dest && !loadData.destination_city) {
-            loadData.destination_city = dest[1].trim();
-            loadData.destination_state = dest[2];
+          if (!loadData.destination_city) {
+            const dest = locationMatches[1].match(/([A-Za-z\s]+),?\s*([A-Z]{2})/);
+            if (dest) {
+              loadData.destination_city = dest[1].trim();
+              loadData.destination_state = dest[2];
+            }
           }
         }
       }
 
-      // Look for email links
-      if (!loadData.broker_email) {
-        const emailLink = row.querySelector('a[href^="mailto:"]');
-        if (emailLink) {
-          loadData.broker_email = emailLink.getAttribute('href').replace('mailto:', '');
-        }
+      // Email
+      const emailLink = row.querySelector('a[href^="mailto:"]');
+      if (emailLink) {
+        loadData.broker_email = emailLink.getAttribute('href').replace('mailto:', '').split('?')[0];
       }
 
+      // Phone
+      const phoneLink = row.querySelector('a[href^="tel:"]');
+      if (phoneLink) {
+        loadData.broker_phone = phoneLink.getAttribute('href').replace('tel:', '');
+      }
+
+      console.log('[FCP] Extracted DAT data:', loadData);
       return loadData;
     } catch (e) {
       console.error('[FCP] Error extracting load data:', e);
@@ -222,7 +266,8 @@
 
     const sendBtn = document.createElement('button');
     sendBtn.className = 'fcp-btn fcp-btn-send';
-    sendBtn.innerHTML = ICONS.send + '<span class="fcp-tooltip">One-Click Send</span>';
+    sendBtn.type = 'button';
+    sendBtn.innerHTML = ICONS.send + '<span class="fcp-tooltip">Quick Send</span>';
     sendBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -231,7 +276,8 @@
 
     const composeBtn = document.createElement('button');
     composeBtn.className = 'fcp-btn fcp-btn-compose';
-    composeBtn.innerHTML = ICONS.envelope + '<span class="fcp-tooltip">Compose Email</span>';
+    composeBtn.type = 'button';
+    composeBtn.innerHTML = ICONS.envelope + '<span class="fcp-tooltip">Compose</span>';
     composeBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -260,26 +306,25 @@
       const activeAccountId = storage.activeAccountId;
       const activeAccount = accounts.find(a => a.id === activeAccountId) || accounts[0];
 
-      if (!loadData.broker_email) {
-        showNotification('No broker email found for this load.', 'error');
-        return;
-      }
-
-      const origin = `${loadData.origin_city}, ${loadData.origin_state}`;
-      const destination = `${loadData.destination_city}, ${loadData.destination_state}`;
+      const origin = loadData.origin_city && loadData.origin_state 
+        ? `${loadData.origin_city}, ${loadData.origin_state}` 
+        : 'Origin';
+      const destination = loadData.destination_city && loadData.destination_state 
+        ? `${loadData.destination_city}, ${loadData.destination_state}` 
+        : 'Destination';
       
-      let subject = defaultTemplate.subject
+      let subject = (defaultTemplate.subject || 'Load Inquiry')
         .replace(/{origin}/g, origin)
         .replace(/{destination}/g, destination)
-        .replace(/{rate}/g, loadData.rate ? `$${loadData.rate}` : 'N/A')
-        .replace(/{miles}/g, loadData.miles || 'N/A')
+        .replace(/{rate}/g, loadData.rate ? `$${loadData.rate}` : 'TBD')
+        .replace(/{miles}/g, loadData.miles || 'TBD')
         .replace(/{broker_name}/g, loadData.broker_name || 'Broker');
 
-      let body = defaultTemplate.body
+      let body = (defaultTemplate.body || '')
         .replace(/{origin}/g, origin)
         .replace(/{destination}/g, destination)
-        .replace(/{rate}/g, loadData.rate ? `$${loadData.rate}` : 'N/A')
-        .replace(/{miles}/g, loadData.miles || 'N/A')
+        .replace(/{rate}/g, loadData.rate ? `$${loadData.rate}` : 'TBD')
+        .replace(/{miles}/g, loadData.miles || 'TBD')
         .replace(/{broker_name}/g, loadData.broker_name || 'Broker');
 
       if (activeAccount && (activeAccount.company || activeAccount.phone)) {
@@ -289,7 +334,16 @@
         if (activeAccount.email) body += activeAccount.email;
       }
 
-      const mailtoUrl = `mailto:${loadData.broker_email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      let toEmail = loadData.broker_email;
+      if (!toEmail) {
+        toEmail = prompt('Enter broker email address:');
+        if (!toEmail) {
+          showNotification('Email cancelled - no address provided', 'error');
+          return;
+        }
+      }
+
+      const mailtoUrl = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.open(mailtoUrl, '_blank');
 
       const emailedLoads = storage.emailedLoads || [];
@@ -304,64 +358,78 @@
       btn.classList.add('fcp-sent');
       btn.innerHTML = ICONS.check + '<span class="fcp-tooltip">Sent!</span>';
 
-      showNotification(`Email sent to ${loadData.broker_name || loadData.broker_email}!`, 'success');
+      showNotification(`Email opened for ${loadData.broker_name || toEmail}!`, 'success');
 
     } catch (e) {
       console.error('[FCP] Error sending email:', e);
-      showNotification('Failed to send email. Please try again.', 'error');
+      showNotification('Failed to open email. Please try again.', 'error');
     }
   }
 
   async function handleComposeEmail(loadData) {
     try {
-      await setStorage({ pendingEmailLoad: loadData });
+      const origin = loadData.origin_city && loadData.origin_state 
+        ? `${loadData.origin_city}, ${loadData.origin_state}` 
+        : 'Origin';
+      const destination = loadData.destination_city && loadData.destination_state 
+        ? `${loadData.destination_city}, ${loadData.destination_state}` 
+        : 'Destination';
       
-      chrome.runtime.sendMessage({ 
-        action: 'openComposeModal', 
-        loadData: loadData 
-      });
-
-      if (loadData.broker_email) {
-        const origin = `${loadData.origin_city}, ${loadData.origin_state}`;
-        const destination = `${loadData.destination_city}, ${loadData.destination_state}`;
-        const subject = `Load Inquiry: ${origin} to ${destination}`;
-        const mailtoUrl = `mailto:${loadData.broker_email}?subject=${encodeURIComponent(subject)}`;
-        window.open(mailtoUrl, '_blank');
-      } else {
-        showNotification('No broker email found. Please check the load details.', 'error');
+      const subject = `Load Inquiry: ${origin} to ${destination}`;
+      
+      let toEmail = loadData.broker_email;
+      if (!toEmail) {
+        toEmail = prompt('Enter broker email address:');
+        if (!toEmail) {
+          showNotification('Email cancelled - no address provided', 'error');
+          return;
+        }
       }
+      
+      const mailtoUrl = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}`;
+      window.open(mailtoUrl, '_blank');
+      
+      showNotification('Compose window opened!', 'success');
     } catch (e) {
       console.error('[FCP] Error opening compose:', e);
     }
   }
 
   function showNotification(message, type = 'success') {
+    document.querySelectorAll('.fcp-notification').forEach(n => n.remove());
+    
     const notif = document.createElement('div');
+    notif.className = 'fcp-notification';
     notif.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 20px;
-      background: ${type === 'success' ? '#22c55e' : '#ef4444'};
-      color: white;
-      border-radius: 8px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 14px;
-      z-index: 999999;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      position: fixed !important;
+      top: 20px !important;
+      right: 20px !important;
+      padding: 14px 20px !important;
+      background: ${type === 'success' ? 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'} !important;
+      color: white !important;
+      border-radius: 10px !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      z-index: 2147483647 !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
     `;
     
     const icon = type === 'success' 
-      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>'
-      : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';
+      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>'
+      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';
     
     notif.innerHTML = `<span style="display:flex">${icon}</span><span>${message}</span>`;
     
     document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 4000);
+    setTimeout(() => {
+      notif.style.opacity = '0';
+      notif.style.transition = 'opacity 0.3s';
+      setTimeout(() => notif.remove(), 300);
+    }, 4000);
   }
 
   function getStorage(keys) {
@@ -371,8 +439,10 @@
       } else {
         const result = {};
         keys.forEach(key => {
-          const stored = localStorage.getItem(`fcp_${key}`);
-          if (stored) result[key] = JSON.parse(stored);
+          try {
+            const stored = localStorage.getItem(`fcp_${key}`);
+            if (stored) result[key] = JSON.parse(stored);
+          } catch (e) {}
         });
         resolve(result);
       }
@@ -385,7 +455,9 @@
         chrome.storage.local.set(data, resolve);
       } else {
         Object.keys(data).forEach(key => {
-          localStorage.setItem(`fcp_${key}`, JSON.stringify(data[key]));
+          try {
+            localStorage.setItem(`fcp_${key}`, JSON.stringify(data[key]));
+          } catch (e) {}
         });
         resolve();
       }
@@ -393,98 +465,128 @@
   }
 
   function injectButtons() {
-    // DAT.com specific selectors
     const rowSelectors = [
+      '.ag-row',
+      '.ag-row-even',
+      '.ag-row-odd',
+      '[role="row"]',
       'table tbody tr',
-      '[data-testid="load-row"]',
-      '.load-row',
-      '.search-results-row',
-      '.loadboard-row',
-      '.load-card',
-      '.load-item',
-      '[class*="LoadRow"]',
       '[class*="load-row"]',
-      '[class*="searchResult"]',
-      'tr[data-load-id]',
-      'tr[data-id]',
-      'div[data-load-id]',
-      // DAT Power specific
+      '[class*="LoadRow"]',
+      '[class*="result-row"]',
       '[class*="ResultRow"]',
-      '[class*="result-row"]'
+      '[data-testid*="load"]',
+      '[data-testid*="row"]'
     ];
 
-    const actionSelectors = [
-      'td:last-child',
-      '.actions-cell',
-      '.action-column',
-      '[class*="actions"]',
-      '[class*="Actions"]',
-      '.load-actions',
-      '.row-actions'
-    ];
+    let totalInjected = 0;
 
-    let injectedCount = 0;
-
-    rowSelectors.forEach(rowSelector => {
-      const rows = document.querySelectorAll(rowSelector);
+    rowSelectors.forEach(selector => {
+      const rows = document.querySelectorAll(selector);
       
       rows.forEach(row => {
         if (row.hasAttribute(FCP_INJECTED_ATTR)) return;
-        if (row.querySelector('th')) return;
+        if (row.classList.contains('ag-header-row') || row.querySelector('.ag-header-cell') || row.querySelector('th')) return;
+        if (!row.textContent || row.textContent.trim().length < 10) return;
         
         const loadData = extractLoadData(row);
         if (!loadData) return;
 
-        let actionsCell = null;
+        let targetCell = row.querySelector(
+          '.ag-cell[col-id*="action"], ' +
+          '.ag-cell[col-id*="Action"], ' +
+          '.ag-cell:last-child, ' +
+          '[role="gridcell"]:last-child, ' +
+          'td:last-child, ' +
+          '[class*="action"], ' +
+          '[class*="Action"]'
+        );
         
-        for (const actionSelector of actionSelectors) {
-          actionsCell = row.querySelector(actionSelector);
-          if (actionsCell) break;
+        if (!targetCell) {
+          targetCell = row.querySelector('.ag-cell button, .ag-cell [role="button"]')?.closest('.ag-cell');
         }
-
-        if (!actionsCell) {
-          const cells = row.querySelectorAll('td');
+        
+        if (!targetCell) {
+          const cells = row.querySelectorAll('.ag-cell, [role="gridcell"], td');
           if (cells.length > 0) {
-            actionsCell = cells[cells.length - 1];
+            targetCell = cells[cells.length - 1];
           }
         }
 
-        if (actionsCell) {
+        if (targetCell) {
           const fcpButtons = createFCPButtons(loadData);
           
-          if (actionsCell.firstChild) {
-            actionsCell.insertBefore(fcpButtons, actionsCell.firstChild);
+          if (targetCell.firstChild) {
+            targetCell.insertBefore(fcpButtons, targetCell.firstChild);
           } else {
-            actionsCell.appendChild(fcpButtons);
+            targetCell.appendChild(fcpButtons);
           }
           
+          targetCell.style.overflow = 'visible';
           row.setAttribute(FCP_INJECTED_ATTR, 'true');
-          injectedCount++;
+          totalInjected++;
         }
       });
     });
 
-    if (injectedCount > 0) {
-      console.log(`[FCP] Injected buttons into ${injectedCount} load rows`);
+    if (totalInjected > 0) {
+      console.log(`[FCP] Injected buttons into ${totalInjected} DAT rows`);
+    }
+    
+    return totalInjected;
+  }
+
+  function waitForContent() {
+    injectionAttempts++;
+    
+    const rows = document.querySelectorAll('.ag-row, [role="row"]:not(.ag-header-row), table tbody tr');
+    
+    console.log(`[FCP] DAT Attempt ${injectionAttempts}: Found ${rows.length} rows`);
+    
+    if (rows.length > 0) {
+      const injected = injectButtons();
+      if (injected > 0) {
+        showNotification(`FCP buttons added to ${injected} loads!`, 'success');
+      }
+    }
+    
+    if (injectionAttempts < MAX_ATTEMPTS) {
+      setTimeout(waitForContent, 2000);
     }
   }
 
   function init() {
-    console.log('[FCP] Freight Connect Pro content script loaded for DAT');
+    console.log('[FCP] Initializing DAT content script');
     
     injectStyles();
-    setTimeout(injectButtons, 1000);
+    setTimeout(waitForContent, 1500);
     
     const observer = new MutationObserver((mutations) => {
       let shouldInject = false;
-      mutations.forEach(mutation => {
-        if (mutation.addedNodes.length > 0) shouldInject = true;
-      });
-      if (shouldInject) setTimeout(injectButtons, 500);
+      for (const mutation of mutations) {
+        if (mutation.addedNodes.length > 0) {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeType === 1 && 
+                (node.classList?.contains('ag-row') || 
+                 node.querySelector?.('.ag-row') ||
+                 node.matches?.('[role="row"]') ||
+                 node.matches?.('tr'))) {
+              shouldInject = true;
+              break;
+            }
+          }
+        }
+        if (shouldInject) break;
+      }
+      
+      if (shouldInject) {
+        setTimeout(injectButtons, 500);
+      }
     });
     
     observer.observe(document.body, { childList: true, subtree: true });
-    setInterval(injectButtons, INJECTION_INTERVAL);
+    
+    console.log('[FCP] DAT initialization complete');
   }
 
   if (document.readyState === 'loading') {
@@ -492,4 +594,6 @@
   } else {
     init();
   }
+
+  console.log('[FCP] DAT content script loaded');
 })();
