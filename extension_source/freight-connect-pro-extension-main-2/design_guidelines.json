@@ -1,0 +1,120 @@
+{
+  "identity": {
+    "name": "Freight Connect Pro",
+    "persona": "The Night Dispatcher",
+    "vibe": "Tactical, High-Contrast, Cockpit-Style, Efficient",
+    "description": "A Chrome Extension that feels like a military-grade logistics terminal. It prioritizes speed, data density, and readability in low-light environments."
+  },
+  "typography": {
+    "primary_font": "Manrope",
+    "secondary_font": "JetBrains Mono",
+    "usage": {
+      "headings": "Manrope, weight 700/800, tracking-tight",
+      "body": "Manrope, weight 400/500",
+      "data_display": "JetBrains Mono, weight 500, uppercase for codes (e.g., 'ORD', 'LAX')",
+      "labels": "JetBrains Mono, weight 400, text-xs, tracking-widest, uppercase"
+    },
+    "scale": {
+      "h1": "text-2xl font-bold tracking-tight",
+      "h2": "text-xl font-semibold tracking-tight",
+      "h3": "text-lg font-medium",
+      "body": "text-sm leading-relaxed",
+      "caption": "text-xs text-muted-foreground"
+    }
+  },
+  "colors": {
+    "palette_name": "Archetype 2: The Performance Pro (Tactical Variant)",
+    "base": {
+      "background": "#09090B",
+      "foreground": "#FAFAFA",
+      "card": "#121214",
+      "card_foreground": "#FAFAFA",
+      "popover": "#09090B",
+      "popover_foreground": "#FAFAFA",
+      "border": "#27272A"
+    },
+    "accents": {
+      "primary": "#F59E0B",
+      "primary_foreground": "#000000",
+      "secondary": "#27272A",
+      "secondary_foreground": "#FAFAFA",
+      "destructive": "#EF4444",
+      "destructive_foreground": "#FAFAFA",
+      "success": "#10B981",
+      "info": "#3B82F6",
+      "warning": "#F59E0B"
+    },
+    "gradients": {
+      "subtle_glow": "radial-gradient(circle at center, rgba(245, 158, 11, 0.15) 0%, transparent 70%)",
+      "active_border": "linear-gradient(90deg, transparent, #F59E0B, transparent)"
+    }
+  },
+  "layout": {
+    "container": "w-[600px] h-[600px] overflow-hidden bg-background text-foreground flex flex-col",
+    "grid_system": "Bento Grid Mode B (High Density)",
+    "spacing": {
+      "page_padding": "p-4",
+      "card_padding": "p-4",
+      "gap": "gap-3"
+    },
+    "radius": {
+      "default": "rounded-md",
+      "button": "rounded-sm",
+      "input": "rounded-sm"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_10px_rgba(245,158,11,0.3)] font-bold uppercase tracking-wide text-xs h-9 rounded-sm transition-all active:scale-95",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border font-medium text-xs h-9 rounded-sm",
+      "ghost": "hover:bg-accent hover:text-accent-foreground text-xs font-medium"
+    },
+    "cards": {
+      "default": "bg-card border border-border/50 shadow-sm rounded-md relative overflow-hidden group",
+      "tactical": "bg-card border border-border/50 rounded-sm relative before:absolute before:inset-0 before:bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.02)_50%,transparent_75%)] before:opacity-0 hover:before:opacity-100 before:transition-opacity"
+    },
+    "inputs": {
+      "default": "bg-secondary/50 border-border focus:border-primary focus:ring-1 focus:ring-primary/50 font-mono text-sm h-9 rounded-sm placeholder:text-muted-foreground/50"
+    },
+    "badges": {
+      "default": "bg-secondary text-secondary-foreground border border-border/50 font-mono text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm",
+      "status_active": "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+      "status_warning": "bg-amber-500/10 text-amber-500 border-amber-500/20",
+      "status_danger": "bg-red-500/10 text-red-500 border-red-500/20"
+    }
+  },
+  "visual_enhancers": {
+    "borders": "1px solid #27272A",
+    "shadows": "shadow-lg shadow-black/40",
+    "textures": "bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] bg-fixed opacity-[0.02] pointer-events-none absolute inset-0 z-0",
+    "animations": {
+      "hover_lift": "transition-transform duration-200 ease-out hover:-translate-y-0.5",
+      "pulse_glow": "animate-pulse"
+    }
+  },
+  "assets": {
+    "images": {
+      "hero_bg": "https://images.unsplash.com/photo-1625596948559-a7fc6c27954f?crop=entropy&cs=srgb&fm=jpg&q=85",
+      "map_abstract": "https://images.pexels.com/photos/8159115/pexels-photo-8159115.jpeg",
+      "truck_night": "https://images.pexels.com/photos/10868785/pexels-photo-10868785.jpeg"
+    },
+    "icons": "Lucide React (default) or Phosphor Icons (for tactical look)"
+  },
+  "instructions_to_main_agent": [
+    "CRITICAL: This is a Chrome Extension. The root container MUST be fixed size (e.g., w-[600px] h-[600px]) to simulate the popup environment during development.",
+    "Use 'JetBrains Mono' for all numbers, RPM calculations, and codes (e.g., 'DH-O', 'V', 'R').",
+    "Implement a 'Tactical' density: reduce padding inside data tables to maximize visibility of rows.",
+    "Use the 'Amber' (#F59E0B) color sparingly—only for primary actions (Book Load, Call Broker) and critical alerts.",
+    "Ensure all inputs have a distinct focus state (border-primary) to support keyboard-only navigation (power user workflow).",
+    "For the 'Load Board', use a striped background (zebra striping) with very low opacity (bg-white/5) for readability.",
+    "The 'RPM Calculator' should look like a physical tool—boxed inputs, clear labels, large result display.",
+    "Dark mode is the DEFAULT and ONLY mode for this version. Do not implement a light mode toggle unless requested."
+  ],
+  "universal_guidelines": [
+    "Do not use gradients for backgrounds; use solid dark colors with subtle noise/texture.",
+    "Avoid 'rounded-xl' or 'rounded-2xl'. Stick to 'rounded-md' or 'rounded-sm' for a professional, industrial look.",
+    "All interactive elements must have a `data-testid`.",
+    "Use `sonner` for all toast notifications.",
+    "Never use generic 'Lorem Ipsum'. Use realistic freight data (e.g., 'Chicago, IL' to 'Dallas, TX', '42,000 lbs', 'Reefer')."
+  ]
+}
