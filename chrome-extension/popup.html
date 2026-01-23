@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=600, height=600">
+  <title>Freight Connect Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/popup.css">
+</head>
+<body>
+  <div id="app" class="extension-container">
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+      <div class="login-logo">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2">
+          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+          <path d="M15 18H9"/>
+          <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/>
+          <circle cx="17" cy="18" r="2"/>
+          <circle cx="7" cy="18" r="2"/>
+        </svg>
+      </div>
+      <h1 class="login-title">Freight Connect Pro</h1>
+      <p class="login-subtitle">Your tactical load hunting companion</p>
+      <button id="google-login-btn" class="google-btn" data-testid="google-login-btn">
+        <svg viewBox="0 0 24 24" width="20" height="20">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Sign in with Google
+      </button>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard" class="dashboard hidden">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2">
+              <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+              <path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/>
+              <circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/>
+            </svg>
+          </div>
+          <div class="logo-text">Freight<span>Connect</span></div>
+        </div>
+        <div class="nav-tabs">
+          <button class="nav-tab active" data-tab="loads" data-testid="tab-loads">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+            Loads
+          </button>
+          <button class="nav-tab" data-tab="calculator" data-testid="tab-calculator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/></svg>
+            RPM
+          </button>
+          <button class="nav-tab" data-tab="email" data-testid="tab-email">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            Email
+          </button>
+          <button class="nav-tab" data-tab="broker" data-testid="tab-broker">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+            Broker
+          </button>
+          <button class="nav-tab" data-tab="settings" data-testid="tab-settings">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            Settings
+          </button>
+        </div>
+        <div class="user-menu">
+          <div id="user-avatar" class="user-avatar"></div>
+          <button id="logout-btn" class="action-btn ghost" data-testid="logout-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content">
+        <!-- LOADS TAB -->
+        <div id="tab-content-loads" class="tab-content active">
+          <div class="filter-bar">
+            <select id="filter-equipment" class="filter-select" data-testid="filter-equipment">
+              <option value="">All Equipment</option>
+              <option value="Van">Van</option>
+              <option value="Reefer">Reefer</option>
+              <option value="Flatbed">Flatbed</option>
+            </select>
+            <select id="filter-origin" class="filter-select" data-testid="filter-origin">
+              <option value="">Origin State</option>
+              <option value="IL">Illinois</option>
+              <option value="TX">Texas</option>
+              <option value="CA">California</option>
+              <option value="GA">Georgia</option>
+              <option value="CO">Colorado</option>
+              <option value="WA">Washington</option>
+            </select>
+            <select id="filter-rpm" class="filter-select" data-testid="filter-rpm">
+              <option value="">Min RPM</option>
+              <option value="2.0">$2.00+</option>
+              <option value="2.5">$2.50+</option>
+              <option value="3.0">$3.00+</option>
+            </select>
+            <button id="refresh-btn" class="action-btn secondary" data-testid="refresh-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+              Refresh
+            </button>
+          </div>
+          <div class="table-container">
+            <table class="load-table" data-testid="load-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Route</th>
+                  <th>Miles</th>
+                  <th>Rate</th>
+                  <th>RPM</th>
+                  <th>Equip</th>
+                  <th>Broker</th>
+                  <th>Risk</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="loads-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CALCULATOR TAB -->
+        <div id="tab-content-calculator" class="tab-content hidden">
+          <div class="calculator-card" data-testid="rpm-calculator">
+            <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/></svg> RPM Calculator</h3>
+            <div class="calculator-grid">
+              <div class="input-group">
+                <label>Rate ($)</label>
+                <input type="number" id="calc-rate" value="2000" data-testid="calc-rate">
+              </div>
+              <div class="input-group">
+                <label>Miles</label>
+                <input type="number" id="calc-miles" value="800" data-testid="calc-miles">
+              </div>
+              <div class="input-group">
+                <label>Deadhead Miles</label>
+                <input type="number" id="calc-deadhead" value="50" data-testid="calc-deadhead">
+              </div>
+              <div class="input-group">
+                <label>Fuel Cost ($/gal)</label>
+                <input type="number" id="calc-fuel" value="3.50" step="0.01" data-testid="calc-fuel">
+              </div>
+              <div class="input-group">
+                <label>MPG</label>
+                <input type="number" id="calc-mpg" value="6.5" step="0.1" data-testid="calc-mpg">
+              </div>
+              <div class="input-group">
+                <label>Tolls ($)</label>
+                <input type="number" id="calc-tolls" value="0" data-testid="calc-tolls">
+              </div>
+            </div>
+            <button id="calc-submit" class="action-btn primary full-width" data-testid="calc-submit">Calculate</button>
+            <div id="calc-result" class="result-display hidden" data-testid="calc-result"></div>
+          </div>
+        </div>
+
+        <!-- EMAIL TAB -->
+        <div id="tab-content-email" class="tab-content hidden" data-testid="email-templates">
+          <!-- Active Account Selector -->
+          <div class="active-account-bar">
+            <span class="label">Sending from:</span>
+            <span id="active-account-display" class="active-account-email">aminpanshiri1@gmail.com</span>
+            <button class="action-btn secondary" onclick="switchTab('settings')" data-testid="switch-account-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Switch
+            </button>
+          </div>
+          
+          <div class="section-header">
+            <h3>Email Templates</h3>
+            <button id="add-template-btn" class="action-btn primary" data-testid="add-template-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+              New Template
+            </button>
+          </div>
+          <p class="help-text">Use placeholders: {origin}, {destination}, {rate}, {miles}, {broker_name}</p>
+          
+          <div id="template-form" class="calculator-card hidden">
+            <div class="input-group">
+              <label>Template Name</label>
+              <input type="text" id="template-name" placeholder="e.g., Quick Inquiry" data-testid="template-name">
+            </div>
+            <div class="input-group">
+              <label>Subject</label>
+              <input type="text" id="template-subject" placeholder="Load Inquiry: {origin} to {destination}" data-testid="template-subject">
+            </div>
+            <div class="input-group">
+              <label>Body</label>
+              <textarea id="template-body" placeholder="Hi {broker_name},
+
+I'm interested in your load from {origin} to {destination}.
+
+Rate: ${rate}
+Miles: {miles}
+
+Please let me know if it's still available.
+
+Thanks!" data-testid="template-body"></textarea>
+            </div>
+            <div class="checkbox-row">
+              <input type="checkbox" id="template-default" data-testid="template-default">
+              <label for="template-default">Set as default template for one-click send</label>
+            </div>
+            <div class="btn-row">
+              <button id="cancel-template-btn" class="action-btn secondary">Cancel</button>
+              <button id="save-template-btn" class="action-btn primary" data-testid="save-template-btn">Save Template</button>
+            </div>
+          </div>
+          <div id="templates-list"></div>
+        </div>
+
+        <!-- BROKER TAB -->
+        <div id="tab-content-broker" class="tab-content hidden" data-testid="broker-check">
+          <div class="calculator-card">
+            <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg> Broker Safety Check</h3>
+            <p class="help-text">Check FMCSA records, scam reports, and factoring ratings</p>
+            <div class="search-row">
+              <input type="text" id="broker-mc-input" placeholder="Enter MC Number (e.g., MC123456)" data-testid="broker-mc-input">
+              <button id="check-broker-btn" class="action-btn primary" data-testid="check-broker-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Check
+              </button>
+            </div>
+          </div>
+          <div id="broker-info" class="broker-panel hidden" data-testid="broker-info"></div>
+          <div id="broker-empty" class="empty-state">
+            <div class="empty-state-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+            </div>
+            <div class="empty-state-title">Enter MC Number</div>
+            <div class="empty-state-text">Check broker safety and scam risk before booking</div>
+          </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="tab-content-settings" class="tab-content hidden" data-testid="settings-panel">
+          <!-- Email Accounts Section -->
+          <div class="calculator-card">
+            <div class="section-header" style="margin-bottom:10px;">
+              <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Email Accounts
+              </h3>
+              <button id="add-account-btn" class="action-btn primary" data-testid="add-account-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                Add
+              </button>
+            </div>
+            <p class="help-text">Manage your email accounts. Select which account to send emails from.</p>
+            <div id="email-accounts-list" class="accounts-list"></div>
+          </div>
+
+          <div class="calculator-card">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              Auto-Email Settings
+            </h3>
+            <p class="help-text">Automatically send emails to brokers when loads match your criteria</p>
+            
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Enable Auto-Email</div>
+                <div class="setting-desc">Automatically email brokers for matching loads</div>
+              </div>
+              <button id="auto-email-toggle" class="toggle-switch" data-testid="auto-email-toggle">
+                <span class="toggle-slider"></span>
+              </button>
+            </div>
+
+            <div id="auto-email-settings" class="auto-email-settings">
+              <div class="input-group">
+                <label>Minimum RPM ($)</label>
+                <input type="number" id="auto-min-rpm" value="2.50" step="0.1" data-testid="auto-min-rpm">
+              </div>
+              <div class="input-group">
+                <label>Equipment Types</label>
+                <div class="checkbox-group">
+                  <label><input type="checkbox" id="auto-van" checked> Van</label>
+                  <label><input type="checkbox" id="auto-reefer"> Reefer</label>
+                  <label><input type="checkbox" id="auto-flatbed"> Flatbed</label>
+                </div>
+              </div>
+              <div class="input-group">
+                <label>Origin States (comma separated)</label>
+                <input type="text" id="auto-origins" placeholder="IL, TX, CA" data-testid="auto-origins">
+              </div>
+              <div class="input-group">
+                <label>Destination States (comma separated)</label>
+                <input type="text" id="auto-destinations" placeholder="FL, GA, AZ" data-testid="auto-destinations">
+              </div>
+              <div class="input-group">
+                <label>Max Emails Per Hour</label>
+                <input type="number" id="auto-max-emails" value="10" min="1" max="50" data-testid="auto-max-emails">
+              </div>
+              <div class="input-group">
+                <label>Skip if Risk Level</label>
+                <select id="auto-skip-risk" class="filter-select">
+                  <option value="high">High Risk Only</option>
+                  <option value="medium">Medium & High Risk</option>
+                  <option value="none">Don't Skip Any</option>
+                </select>
+              </div>
+            </div>
+            <button id="save-auto-settings-btn" class="action-btn primary full-width" data-testid="save-auto-settings-btn">Save Auto-Email Settings</button>
+          </div>
+
+          <div class="calculator-card" style="margin-top: 12px;">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              General Settings
+            </h3>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Auto-Refresh Loads</div>
+                <div class="setting-desc">Refresh loads every 30 seconds</div>
+              </div>
+              <button id="auto-refresh-toggle" class="toggle-switch active" data-testid="auto-refresh-toggle">
+                <span class="toggle-slider"></span>
+              </button>
+            </div>
+            <div class="setting-row">
+              <div>
+                <div class="setting-label">Sound Notifications</div>
+                <div class="setting-desc">Play sound for high-value loads</div>
+              </div>
+              <button id="sound-toggle" class="toggle-switch" data-testid="sound-toggle">
+                <span class="toggle-slider"></span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Auto-Email Stats -->
+          <div class="calculator-card stats-card" style="margin-top: 12px;">
+            <h3>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              Auto-Email Stats
+            </h3>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value" id="stat-sent">0</div>
+                <div class="stat-label">Emails Sent</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-today">0</div>
+                <div class="stat-label">Today</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-matched">0</div>
+                <div class="stat-label">Loads Matched</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value" id="stat-skipped">0</div>
+                <div class="stat-label">Skipped</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <div class="status-item">
+          <span id="status-dot" class="status-dot"></span>
+          <span id="status-text">Connected</span>
+        </div>
+        <div class="status-item" id="auto-email-status">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          <span id="auto-email-status-text">Auto-Email: OFF</span>
+        </div>
+        <div class="status-item">
+          <span id="load-count">0 loads</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email Send Modal -->
+    <div id="email-modal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Send Email</h3>
+          <button id="close-modal-btn" class="action-btn ghost">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group">
+            <label>From (Active Account)</label>
+            <select id="modal-from" class="filter-select" data-testid="modal-from"></select>
+          </div>
+          <div class="input-group">
+            <label>To</label>
+            <input type="email" id="modal-to" readonly data-testid="modal-to">
+          </div>
+          <div class="input-group">
+            <label>Subject</label>
+            <input type="text" id="modal-subject" data-testid="modal-subject">
+          </div>
+          <div class="input-group">
+            <label>Message</label>
+            <textarea id="modal-body" rows="8" data-testid="modal-body"></textarea>
+          </div>
+          <div class="input-group">
+            <label>Select Template</label>
+            <select id="modal-template" class="filter-select" data-testid="modal-template">
+              <option value="">-- Select Template --</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-cancel-btn" class="action-btn secondary">Cancel</button>
+          <button id="modal-send-btn" class="action-btn primary" data-testid="modal-send-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            Send Email
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Edit Modal -->
+    <div id="account-modal" class="modal hidden">
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="account-modal-title">Add Account</h3>
+          <button id="close-account-modal-btn" class="action-btn ghost">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group">
+            <label>Email Address *</label>
+            <input type="email" id="account-email-input" placeholder="your@email.com" data-testid="account-email-input">
+          </div>
+          <div class="input-group">
+            <label>Company Name</label>
+            <input type="text" id="account-company-input" placeholder="Your Company Name" data-testid="account-company-input">
+          </div>
+          <div class="input-group">
+            <label>Phone Number</label>
+            <input type="text" id="account-phone-input" placeholder="(555) 123-4567" data-testid="account-phone-input">
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="account-main-checkbox" data-testid="account-main-checkbox">
+            <label for="account-main-checkbox">Set as main account</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="account-delete-btn" class="action-btn ghost hidden" style="color: var(--destructive);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            Delete
+          </button>
+          <button id="account-modal-cancel-btn" class="action-btn secondary">Cancel</button>
+          <button id="account-modal-save-btn" class="action-btn primary" data-testid="account-modal-save-btn">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+  </div>
+
+  <script src="js/popup.js"></script>
+</body>
+</html>
